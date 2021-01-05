@@ -568,7 +568,6 @@ end
 function GameMode:OnAllPlayersLoaded()
 
   GameMode.numPlayers = PlayerResource:NumPlayers()
-  print("number of players in the game: " .. GameMode.numPlayers)
   
   GameRules:GetGameModeEntity():SetModifierGainedFilter(Dynamic_Wrap(GameMode, "ModifierFilter"), self)
 
@@ -697,7 +696,7 @@ function GameMode:GameThinker()
           --run only once, after 30 seconds
           Timers:CreateTimer({
             --one second before outer timer thinking again so GameMode.gameActive block runs in the next thought
-            endTime = 9, -- how many seconds players can play on the board
+            endTime = 29, -- how many seconds players can play on the board
             callback = function()
               --save player state
               for teamNumber = 6, 13 do
@@ -754,7 +753,7 @@ function GameMode:GameThinker()
               GameRules:SetHeroRespawnEnabled(false)
             end
           })
-          return 10 -- how many seconds players can play on the board
+          return 30 -- how many seconds players can play on the board
         end
       end
     end
@@ -2910,7 +2909,7 @@ function GameMode:InitGameMode()
   GameMode.gameActive = false
   --GameMode.game_index = nil
   --testing
-  GameMode.game_index = 4
+  GameMode.game_index = 0
   --GameMode.mortyLoot = nil
 
   ---------

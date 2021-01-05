@@ -19,6 +19,7 @@ end
 --------------------------------------------------------------------------------
 -- Ability Start
 function mortimer_kisses_base:OnSpellStart()
+	self.blob_hit = 0
 	
 	self.caster = self:GetCaster()
 	
@@ -56,6 +57,9 @@ end
 --------------------------------------------------------------------------------
 -- Projectile
 function mortimer_kisses_base:OnProjectileHit( target, location )
+	self.blob_hit = self.blob_hit + 1
+	print("projectile hit: " .. self.blob_hit)
+
 	self.caster = self:GetCaster()
 	if not target then return end
 
@@ -338,17 +342,19 @@ function mortimer_kisses_modifier:OnRemoved()
 end
 
 function mortimer_kisses_modifier:OnDestroy()
-	print("modifier destroyed")
+	print("spell modifier destroyed")
 	if self:GetCaster():HasAbility("mortimer_kisses_teleport") then
 		print("has teleport")
 		--switch ability back to ult
 		--it was swapping again at the end of teleport; causes hotkey to disappear and the teleport ability to disappear
 		self:GetCaster():SwapAbilities("mortimer_kisses_base", "mortimer_kisses_teleport", true, true)
-	--if caster died after casting kisses and before casting teleport
-	elseif self:GetCaster().teleportCast == false and self.remnants ~= nil then
-		for _, remnant in pairs(self.remnants) do
-			remnant:ForceKill(false)
+		--if caster died after casting kisses and before casting teleport
+		if self:GetCaster().teleportCast == false and self.remnants ~= nil then
+			for _, remnant in pairs(self.remnants) do
+				remnant:ForceKill(false)
+			end
 		end
+	--if caster died after teleport
 	else
 		--kill remnants
 		--kill 
@@ -475,6 +481,7 @@ function mortimer_kisses_modifier:CreateBlob(kv)
 	end
 
 	self.blob_count = self.blob_count + 1
+	print("blob count: " .. self.blob_count)
 
 	----------------------
 	-- teleport upgrade --
@@ -503,6 +510,16 @@ function mortimer_kisses_modifier:CreateBlob(kv)
 		self:GetParent():GetTeamNumber(),
 		false
 	)
+
+	--blob doesn't hit target when caster dies before it hits
+	--[[Timers:CreateTimer(string.format("blob_thinker_%s", self.blob_count), {
+		useGameTime = false,
+		endTime = 0,
+		callback = function()
+		  print("blob " .. self.blob_count .. "is alive: " .. tostring(thinker:IsAlive()))
+		  return 0.1
+		end
+	  })]]
 
 
 
@@ -564,6 +581,7 @@ function mortimer_kisses_modifier:CreateBlobExtra(kv)
 		self:GetParent():GetTeamNumber(),
 		false
 	)
+	thinker:SetModel("models/creeps/neutral_creeps/n_creep_kobold/kobold_c/n_creep_kobold_c.vmdl")
 
 	-- set projectile
 	self.info.iMoveSpeed = (target_pos - self:GetCaster():GetAbsOrigin()):Length2D() / travel_time
@@ -781,6 +799,7 @@ mortimer_kisses_thinker_modifier = class({})
 --------------------------------------------------------------------------------
 -- Initializations
 function mortimer_kisses_thinker_modifier:OnCreated( kv )
+	print("thinker modifier created")
 
 	-- references
 	self.max_travel = self:GetAbility():GetSpecialValueFor( "max_lob_travel_time" )
@@ -794,12 +813,13 @@ function mortimer_kisses_thinker_modifier:OnCreated( kv )
 
     -- create aoe finder particle
     if self:GetAbility():GetAbilityName() == "mortimer_kisses_base" then
-        self:PlayEffects( kv.travel_time )
+        --self:PlayEffects( kv.travel_time )
     end
 end
 
 function mortimer_kisses_thinker_modifier:OnRefresh( kv )
 	print("refresh")
+	
 	-- references
 	self.max_travel = self:GetAbility():GetSpecialValueFor( "max_lob_travel_time" )
 	self.radius = self:GetAbility():GetSpecialValueFor( "impact_radius" )
@@ -811,7 +831,7 @@ function mortimer_kisses_thinker_modifier:OnRefresh( kv )
 	self.start = true
 
 	-- stop aoe finder particle
-	self:StopEffects()
+	--self:StopEffects()
 end
 
 --before unit loses modifier
@@ -820,8 +840,9 @@ end
 
 --after unit loses modifier
 function mortimer_kisses_thinker_modifier:OnDestroy()
+	print("thinker modifier destroyed")
 	if not IsServer() then return end
-	self:StopEffects()
+	--self:StopEffects()
 	UTIL_Remove( self:GetParent() )
 end
 
