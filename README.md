@@ -1,3 +1,3 @@
 # cookie_party
 
-![Image of cookies with invoker in the middle](![Image of Yaktocat](https://octodex.github.com/images/yaktocat.png))
+![Image of cookies with invoker in the middle](https://github.com/jojuno/cookie_party/blob/main/poster_1.jpg)
